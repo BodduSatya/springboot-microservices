@@ -14,6 +14,17 @@ public class MovieInfo {
     @Autowired
     private RestTemplate restTemplate;
 
+    /*
+       Bulkhead pattern ( create separate pools for each services )
+       @HystrixCommand(
+           fallbackMethod = "getFallbackCatalogItem",
+           threadPoolKey="movieInfoPool",
+           threadPoolProperties={
+              @HystrixProperty(name="coreSize", value="20"),
+              @HystrixProperty(name="maxQueueSize", value="10")
+           }
+       )
+    */
     @HystrixCommand(fallbackMethod = "getFallbackCatalogItem")
     public CatalogItem getCatalogItem(Rating rating) {
         Movie movie = restTemplate.getForObject("http://movie-info-service/movies/"+ rating.getMovieId(), Movie.class);
