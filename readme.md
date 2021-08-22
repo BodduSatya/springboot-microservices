@@ -20,9 +20,10 @@ Microservices with spring Boot
 	
 
 http://localhost:8081/catalog/foo
-http://localhost:8082/movies/1234
-http://localhost:8083/ratingsdata/1234
 
+http://localhost:8082/movies/1234
+
+http://localhost:8083/ratingsdata/1234
 
 http://localhost:8083/ratingsdata/users/foo
 
