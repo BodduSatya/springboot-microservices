@@ -5,6 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.javaminds.moviecatalogservice.services.MovieInfo;
+import com.javaminds.moviecatalogservice.services.UserRatingInfo;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,46 +26,33 @@ public class MovieCatalogResource {
 
 	@Autowired
 	private RestTemplate restTemplate;
-	
+
 	@Autowired
 	private WebClient.Builder webClientBuilder;
-	
-    // put them all together
+
+	@Autowired
+	MovieInfo movieInfo;
+
+	@Autowired
+	UserRatingInfo userRatingInfo;
+
+	// put them all together
 	@RequestMapping("/{userId}")
-	public List<CatalogItem> getCatalog(@PathVariable("userId") String userId){
-	
-		  
-		 
+	public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
+
 		//get all rated movie ids
-		UserRating userRatings = restTemplate.getForObject("http://rating-data-service/ratingsdata/users/"+userId, UserRating.class);
-		
-		List<Rating> ratings = userRatings.getUserRating();
-		//for each movie id, call movie info service and get details
-		
-//		ratings.stream().map(rating-> {
-//			new CatalogItem("Transformers","Test",4)
-//		})
-//		.collect(Collectors.toList())
-		
-		
-		ArrayList<CatalogItem> l = new ArrayList<CatalogItem>();
-		for ( Rating r : ratings ) {
-			Movie movie = restTemplate.getForObject("http://movie-info-service/movies/"+r.getMovieId(), Movie.class);
-			
-//			Movie movie = webClientBuilder.build()
-//			.get()
-//			.uri("http://localhost:8082/movies/"+r.getMovieId())
-//			.retrieve()
-//			.bodyToMono(Movie.class)
-//			.block();
-			
-			
-			l.add(new CatalogItem(movie.getName(),"Test",r.getRating()));
-		}
-		
-		return l; 
-		
-		
+		UserRating userRatings = userRatingInfo.getUserRating(userId);
+
+		return userRatings.getRatings().stream()
+				.map(rating -> movieInfo.getCatalogItem(rating))
+				.collect(Collectors.toList());
 	}
+
+	/*Movie movie = webClientBuilder.build()
+	.get()
+	.uri("http://localhost:8082/movies/"+r.getMovieId())
+	.retrieve()
+	.bodyToMono(Movie.class)
+	.block();*/
 }
 
